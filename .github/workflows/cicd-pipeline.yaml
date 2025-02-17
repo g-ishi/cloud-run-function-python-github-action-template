@@ -39,7 +39,7 @@ jobs:
           gcloud beta run deploy $CLOUD_RUN_FUNCTION_NAME \
           --source . \
           --function $TARGET_FUNCTION \
-          --base-image <PYTHON_VERSION> \
+          --base-image python312 \
           --region $REGION \
           --allow-unauthenticated \
           --verbosity=debug

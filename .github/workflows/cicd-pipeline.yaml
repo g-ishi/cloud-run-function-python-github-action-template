@@ -1,46 +1,47 @@
+# ワークフローの名前を設定
 name: <WORKFLOW_NAME>
-
 on:
   push:
     branches:
+      # デプロイをトリガーするブランチ名（例：main, development など）
       - <BRANCH_NAME>
 jobs:
   deploy_cloud_run_function:
     runs-on: ubuntu-latest
-
     env:
+      # Cloud Run にデプロイする関数の名前
       CLOUD_RUN_FUNCTION_NAME: <FUNCTION_NAME>
+      # エントリーポイントとなる関数名（コード内で定義された関数名）
       TARGET_FUNCTION: <TARGET_FUNCTION_NAME>
+      # デプロイするリージョン（例：asia-northeast1）
       REGION: <REGION>
+      # Google Cloud プロジェクトID
       PROJECT: <PROJECT_ID>
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - id: auth
         uses: 'google-github-actions/auth@v2'
         with:
+          # GCPのサービスアカウントキー（GitHubのシークレットに設定）
           credentials_json: '${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}'
-
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
-
       - name: Set Google Cloud Project
         run: gcloud config set project $PROJECT
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
-
       - name: Install beta components
         run: gcloud components install beta --quiet
-
       - name: Deploy to Cloud Run Function
         run: |
           gcloud beta run deploy $CLOUD_RUN_FUNCTION_NAME \
           --source . \
           --function $TARGET_FUNCTION \
+          # Python 3.12を使用
           --base-image python312 \
           --region $REGION \
+          # 認証なしでのアクセスを許可
           --allow-unauthenticated \
           --verbosity=debug
         env:
